@@ -15,14 +15,28 @@ enum SpatialCaptureError: Error, LocalizedError {
     }
 }
 
+/// A camera lens the user can switch to, as a zoom factor on the virtual multi-camera.
+struct CameraLens: Identifiable, Hashable, Sendable {
+    /// What the Camera app shows, e.g. "0.5×".
+    var label: String
+    var zoomFactor: CGFloat
+
+    var id: CGFloat { zoomFactor }
+}
+
 /// Captures 4-channel First Order Ambisonics (ACN/SN3D: W, Y, Z, X) from the built-in
-/// mic array and keeps the most recent audio in a ring buffer.
+/// mic array and keeps the most recent audio in a ring buffer. The same session also
+/// drives the camera preview, so camera and spatial audio never compete.
 final class SpatialCaptureService: NSObject, @unchecked Sendable {
     /// ~10 s of audio at 48 kHz.
     let buffer = FOARingBuffer(capacity: 48_000 * 10)
     private(set) var sampleRate: Double = 48_000
+    /// For the camera preview layer.
+    let session = AVCaptureSession()
+    /// Lenses on this phone, widest first. Empty if there's no camera or access was denied.
+    private(set) var lenses: [CameraLens] = []
 
-    private let session = AVCaptureSession()
+    private var camera: AVCaptureDevice?
     private let output = AVCaptureAudioDataOutput()
     private let queue = DispatchQueue(label: "mmt.capture", qos: .userInitiated)
     private var scratch: [[Float]] = Array(repeating: [], count: FOARingBuffer.channelCount)
@@ -39,7 +53,10 @@ final class SpatialCaptureService: NSObject, @unchecked Sendable {
             throw SpatialCaptureError.ambisonicsUnsupported
         }
 
+        let cameraInput = await makeCameraInput()
+
         session.beginConfiguration()
+        if let cameraInput, session.canAddInput(cameraInput) { session.addInput(cameraInput) }
         if session.canAddInput(input) { session.addInput(input) }
         input.multichannelAudioMode = .firstOrderAmbisonics
         // iOS 26: ask this data output for the FOA stream rather than the stereo one.
@@ -53,6 +70,49 @@ final class SpatialCaptureService: NSObject, @unchecked Sendable {
 
     func stop() {
         queue.async { self.session.stopRunning() }
+    }
+
+    /// Switches lens. On the virtual multi-camera, zoom factor 1 is the widest lens and
+    /// iOS swaps physical cameras at the switch-over factors.
+    func select(_ lens: CameraLens) {
+        guard let camera else { return }
+        queue.async {
+            do {
+                try camera.lockForConfiguration()
+                camera.videoZoomFactor = min(max(lens.zoomFactor, camera.minAvailableVideoZoomFactor),
+                                             camera.maxAvailableVideoZoomFactor)
+                camera.unlockForConfiguration()
+            } catch {}
+        }
+    }
+
+    private func makeCameraInput() async -> AVCaptureDeviceInput? {
+        guard await AVCaptureDevice.requestAccess(for: .video) else { return nil }
+        let types: [AVCaptureDevice.DeviceType] = [.builtInTripleCamera, .builtInDualWideCamera,
+                                                   .builtInDualCamera, .builtInWideAngleCamera]
+        guard let device = AVCaptureDevice.DiscoverySession(deviceTypes: types, mediaType: .video,
+                                                            position: .back).devices.first,
+              let input = try? AVCaptureDeviceInput(device: device) else { return nil }
+        camera = device
+        lenses = Self.lenses(for: device)
+        // Start on the widest lens.
+        if let widest = lenses.first { select(widest) }
+        return input
+    }
+
+    /// The physical lenses of a (virtual) camera as zoom factors, labelled like the Camera
+    /// app: the main wide lens is "1×", so the ultra-wide is "0.5×" and so on.
+    private static func lenses(for device: AVCaptureDevice) -> [CameraLens] {
+        let switchOvers = device.virtualDeviceSwitchOverVideoZoomFactors.map { CGFloat(truncating: $0) }
+        let factors = [CGFloat(1)] + switchOvers
+        let hasUltraWide = device.constituentDevices.contains { $0.deviceType == .builtInUltraWideCamera }
+        // Zoom factor of the main wide camera, which the Camera app calls 1×.
+        let main = hasUltraWide ? (switchOvers.first ?? 1) : 1
+        return factors.map { factor in
+            let shown = factor / main
+            let label = shown < 1 ? String(format: "%.1f×", shown) : String(format: "%.0f×", shown)
+            return CameraLens(label: label, zoomFactor: factor)
+        }
     }
 }
 

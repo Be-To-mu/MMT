@@ -43,10 +43,4 @@ public enum SpatialGeometry {
         return atan2(d.x, d.y) * 180 / .pi
     }
 
-    /// Converts a world vector into ARKit's `.gravityAndHeading` frame
-    /// (x east, y up, z south), scaled to `distance` metres.
-    public static func arPosition(world: SIMD3<Double>, distance: Double) -> SIMD3<Float> {
-        let v = simd_normalize(world) * distance
-        return SIMD3(Float(-v.y), Float(v.z), Float(-v.x))
-    }
 }

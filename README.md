@@ -4,7 +4,7 @@ An iPhone app that listens for birds, identifies the species, and shows an arrow
 
 ## How direction works
 
-iOS Spatial Audio capture (`AVCaptureDeviceInput.multichannelAudioMode = .firstOrderAmbisonics`) combines the iPhone's microphone array into 4-channel First Order Ambisonics (W, Y, Z, X; ACN/SN3D). `DOAEstimator` takes the acoustic intensity vector `Re(W* · [X, Y, Z])` per frequency bin and votes it into an energy-weighted azimuth histogram. That gives a 360° bearing plus elevation from a single phone. CoreMotion (`xTrueNorthZVertical`) turns this into a compass bearing, so the arrow stays on target as you turn.
+iOS Spatial Audio capture (`AVCaptureDeviceInput.multichannelAudioMode = .firstOrderAmbisonics`) combines the iPhone's microphone array into 4-channel First Order Ambisonics (W, Y, Z, X; ACN/SN3D). `DOAEstimator` takes the acoustic intensity vector `Re(W* · [X, Y, Z])` per frequency bin and votes it into an energy-weighted azimuth histogram. That gives a 360° bearing plus elevation from a single phone. CoreMotion (`xTrueNorthZVertical`) turns this into a compass bearing, so the arrow stays on target as you turn. Since one phone gives a direction but no distance, orientation alone is enough: the camera view needs no ARKit and works with any lens.
 
 **Requirements:** iPhone 16 or later on iOS 26, using the built-in microphone. Xcode 26.
 
@@ -24,7 +24,7 @@ Run the core tests with `cd Packages/MMTCore && swift test`.
 
 - [x] DOA estimator, geometry and ring buffer (`Packages/MMTCore`), with unit tests
 - [x] FOA capture service, heading service, direction debug screen (clap test)
-- [x] AR camera view: world-anchored marker at the sound's bearing + 3D arrow in front of the camera
+- [x] Camera view with lens switching (0.5× / 1× / tele) and a free-rotating 3D arrow at screen centre, steered by CoreMotion
 - [x] BirdNET v2.4 species classifier (Core ML, converted with `tools/convert_birdnet.py`)
 - [x] Detected-birds grid with Wikipedia photos → pick one → AR marker and arrow
 - [ ] Location/week species filter (BirdNET meta model)

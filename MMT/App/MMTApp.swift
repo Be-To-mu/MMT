@@ -15,7 +15,7 @@ struct RootView: View {
     var body: some View {
         TabView {
             Tab("Camera", systemImage: "camera.viewfinder") {
-                ARDirectionView(tracker: tracker)
+                CameraDirectionView(tracker: tracker)
             }
             Tab("Debug", systemImage: "waveform") {
                 DirectionDebugView(tracker: tracker)

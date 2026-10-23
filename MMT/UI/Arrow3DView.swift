@@ -15,6 +15,7 @@ struct Arrow3DView: UIViewRepresentable {
         let view = ARView(frame: .zero, cameraMode: .nonAR, automaticallyConfigureSession: false)
         view.environment.background = .color(.clear)
         view.backgroundColor = .clear
+        view.isOpaque = false
         context.coordinator.install(in: view)
         return view
     }

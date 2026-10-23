@@ -21,7 +21,7 @@
 	<key>CFBundleVersion</key>
 	<string>1</string>
 	<key>NSCameraUsageDescription</key>
-	<string>MMT shows the camera with an arrow placed in the scene pointing towards the bird.</string>
+	<string>MMT shows the camera with an arrow pointing towards the bird.</string>
 	<key>NSLocationWhenInUseUsageDescription</key>
 	<string>MMT uses your location to narrow down which birds are likely nearby and to find true north.</string>
 	<key>NSMicrophoneUsageDescription</key>
@@ -30,10 +30,6 @@
 	<string>MMT uses the phone's orientation so the arrow keeps pointing at the bird as you turn.</string>
 	<key>UILaunchScreen</key>
 	<dict/>
-	<key>UIRequiredDeviceCapabilities</key>
-	<array>
-		<string>arkit</string>
-	</array>
 	<key>UISupportedInterfaceOrientations</key>
 	<array>
 		<string>UIInterfaceOrientationPortrait</string>

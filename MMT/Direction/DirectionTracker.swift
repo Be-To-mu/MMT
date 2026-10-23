@@ -1,4 +1,5 @@
 import Accelerate
+import AVFoundation
 import Observation
 import MMTCore
 
@@ -31,6 +32,11 @@ final class DirectionTracker {
     private(set) var sightings: [BirdSighting] = []
     var selectedSpeciesIndex: Int?
 
+    private(set) var lenses: [CameraLens] = []
+    private(set) var currentLens: CameraLens?
+    /// Shared with the camera preview; the same session captures the spatial audio.
+    var captureSession: AVCaptureSession { capture.session }
+
     private let capture = SpatialCaptureService()
     private let estimator = DOAEstimator()
     private var classifier: BirdClassifier?
@@ -43,11 +49,18 @@ final class DirectionTracker {
         sightings.first { $0.id == selectedSpeciesIndex }
     }
 
+    func select(_ lens: CameraLens) {
+        capture.select(lens)
+        currentLens = lens
+    }
+
     /// Runs until the calling task is cancelled.
     func run() async {
         heading.start()
         do {
             try await capture.start()
+            lenses = capture.lenses
+            currentLens = lenses.first
         } catch {
             self.error = error.localizedDescription
             heading.stop()
