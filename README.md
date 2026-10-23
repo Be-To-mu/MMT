@@ -11,9 +11,11 @@ iOS Spatial Audio capture (`AVCaptureDeviceInput.multichannelAudioMode = .firstO
 ## Build
 
 ```sh
-brew install xcodegen
+brew install xcodegen uv
+tools/setup_birdnet.sh   # downloads BirdNET and converts it to Core ML (~5 min)
+cp Local.xcconfig.example Local.xcconfig   # then put your Apple team ID in it
 xcodegen            # generates MMT.xcodeproj from project.yml
-open MMT.xcodeproj  # set your signing team, run on a real iPhone
+open MMT.xcodeproj  # run on a real iPhone
 ```
 
 Run the core tests with `cd Packages/MMTCore && swift test`.
@@ -23,8 +25,9 @@ Run the core tests with `cd Packages/MMTCore && swift test`.
 - [x] DOA estimator, geometry and ring buffer (`Packages/MMTCore`), with unit tests
 - [x] FOA capture service, heading service, direction debug screen (clap test)
 - [x] AR camera view: world-anchored marker at the sound's bearing + 3D arrow in front of the camera
-- [ ] BirdNET species classifier (Core ML)
-- [ ] Detected-birds grid with Wikipedia photos → arrow
+- [x] BirdNET v2.4 species classifier (Core ML, converted with `tools/convert_birdnet.py`)
+- [x] Detected-birds grid with Wikipedia photos → pick one → AR marker and arrow
+- [ ] Location/week species filter (BirdNET meta model)
 - [ ] Stereo + sweep fallback for older iPhones
 
 ## Credits and licensing
