@@ -6,3 +6,5 @@ xcuserdata/
 DerivedData/
 *.mlpackage/
 *.tflite
+MMT/Resources/BirdNET_Labels.txt
+Local.xcconfig

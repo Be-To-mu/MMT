@@ -1,7 +1,7 @@
 # Generate MMT.xcodeproj with: brew install xcodegen && xcodegen
 name: MMT
 options:
-  bundleIdPrefix: com.betomu
+  bundleIdPrefix: io.github.be-to-mu
   deploymentTarget:
     iOS: "26.0"
 packages:
@@ -10,11 +10,13 @@ packages:
 settings:
   base:
     SWIFT_VERSION: "6.0"
-    DEVELOPMENT_TEAM: ""   # set your Apple ID team in Xcode → Signing
 targets:
   MMT:
     type: application
     platform: iOS
+    configFiles:
+      Debug: Signing.xcconfig
+      Release: Signing.xcconfig
     sources: [MMT]
     dependencies:
       - package: MMTCore
