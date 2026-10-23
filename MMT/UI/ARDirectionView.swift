@@ -109,7 +109,7 @@ private struct ARSceneView: UIViewRepresentable {
         var targetPosition: SIMD3<Float>?
 
         private let marker = Entity()
-        private let arrow = Entity()
+        private let arrow = ArrowEntity.make()
         private let billboard = Entity()
         private var label: ModelEntity?
         private var labelText = ""
@@ -119,7 +119,6 @@ private struct ARSceneView: UIViewRepresentable {
         func install(in view: ARView) {
             let world = AnchorEntity(world: .zero)
             buildMarker()
-            buildArrow()
             world.addChild(marker)
             world.addChild(arrow)
             marker.isEnabled = false
@@ -147,10 +146,11 @@ private struct ARSceneView: UIViewRepresentable {
             marker.position = simd_mix(marker.position, markerPos, SIMD3(repeating: min(1, dt * 4)))
             marker.scale = SIMD3(repeating: 1 + 0.12 * sin(time * 4))
 
-            // Arrow: fixed in front of the camera, slightly low, pointing at the marker.
-            let anchorPoint = camera.matrix * SIMD4<Float>(0, -0.12, -0.6, 1)
+            // Arrow: pivots about its middle at the centre of the view, free to point
+            // anywhere, including into or out of the screen.
+            let anchorPoint = camera.matrix * SIMD4<Float>(0, 0, -0.6, 1)
             arrow.position = SIMD3(anchorPoint.x, anchorPoint.y, anchorPoint.z)
-            let direction = simd_normalize(marker.position - arrow.position)
+            let direction = simd_normalize(target)
             let wanted = simd_quatf(from: SIMD3(0, 0, -1), to: direction)
             arrow.orientation = simd_slerp(arrow.orientation, wanted, min(1, dt * 8))
         }
@@ -183,21 +183,6 @@ private struct ARSceneView: UIViewRepresentable {
             entity.position = [-bounds.center.x, 0.55, 0]
             billboard.addChild(entity)
             label = entity
-        }
-
-        private func buildArrow() {
-            // Built along -z so orienting it is a single rotation from (0, 0, -1).
-            let material = SimpleMaterial(color: .systemYellow, roughness: 0.3, isMetallic: false)
-            let shaft = ModelEntity(mesh: .generateCylinder(height: 0.14, radius: 0.012),
-                                    materials: [material])
-            shaft.orientation = simd_quatf(angle: -.pi / 2, axis: [1, 0, 0])
-            shaft.position = [0, 0, -0.03]
-            let head = ModelEntity(mesh: .generateCone(height: 0.06, radius: 0.03),
-                                   materials: [material])
-            head.orientation = simd_quatf(angle: -.pi / 2, axis: [1, 0, 0])
-            head.position = [0, 0, -0.13]
-            arrow.addChild(shaft)
-            arrow.addChild(head)
         }
     }
 }

@@ -1,8 +1,10 @@
 import SwiftUI
+import simd
 import MMTCore
 
-/// Debug screen: proves FOA capture works and points a 2D arrow at the last loud sound
-/// (clap test / axis calibration).
+/// Debug screen: proves FOA capture works and points a 3D arrow at the last loud sound
+/// (clap test / axis calibration). The arrow pivots about the centre and can point into
+/// or out of the screen, so front/back and up/down are visible whichever way the phone is held.
 struct DirectionDebugView: View {
     let tracker: DirectionTracker
 
@@ -16,29 +18,33 @@ struct DirectionDebugView: View {
 
             ZStack {
                 Circle().stroke(.secondary.opacity(0.3), lineWidth: 2)
-                if let target = tracker.targetWorld,
-                   let angle = SpatialGeometry.arrowAngle(towards: target,
-                                                         deviceToWorld: tracker.heading.deviceToWorld) {
-                    Image(systemName: "arrow.up")
-                        .font(.system(size: 120, weight: .bold))
-                        .rotationEffect(.degrees(angle))
-                        .animation(.easeOut(duration: 0.15), value: angle)
-                } else {
+                Arrow3DView(direction: deviceDirection)
+                if deviceDirection == nil {
                     Text("Clap or make a sound").foregroundStyle(.secondary)
                 }
             }
-            .frame(width: 280, height: 280)
+            .frame(width: 300, height: 300)
 
-            if let est = tracker.lastEstimate, let bearing = tracker.targetBearing {
+            if let est = tracker.lastEstimate, let bearing = tracker.targetBearing,
+               let elevation = tracker.targetElevation {
                 VStack {
                     Text(String(format: "Device az %.0f°  el %.0f°", est.azimuth, est.elevation))
-                    Text(String(format: "Bearing %.0f°  spread %.0f°  conf %.2f",
-                                bearing, est.spread, est.confidence))
+                    Text(String(format: "Bearing %.0f°  %.0f° %@  spread %.0f°  conf %.2f",
+                                bearing, abs(elevation), elevation >= 0 ? "up" : "down",
+                                est.spread, est.confidence))
                 }
                 .font(.footnote.monospaced())
             }
         }
         .padding()
+    }
+
+    /// Target in the device frame (x right edge, y top edge, z out of the screen),
+    /// recomputed as the phone moves so the arrow stays on the sound.
+    private var deviceDirection: SIMD3<Float>? {
+        guard let target = tracker.targetWorld else { return nil }
+        let d = tracker.heading.deviceToWorld.transpose * target
+        return SIMD3(Float(d.x), Float(d.y), Float(d.z))
     }
 
     private var levelMeters: some View {
