@@ -1,0 +1,29 @@
+# Generate MMT.xcodeproj with: brew install xcodegen && xcodegen
+name: MMT
+options:
+  bundleIdPrefix: com.betomu
+  deploymentTarget:
+    iOS: "26.0"
+packages:
+  MMTCore:
+    path: Packages/MMTCore
+settings:
+  base:
+    SWIFT_VERSION: "6.0"
+    DEVELOPMENT_TEAM: ""   # set your Apple ID team in Xcode → Signing
+targets:
+  MMT:
+    type: application
+    platform: iOS
+    sources: [MMT]
+    dependencies:
+      - package: MMTCore
+    info:
+      path: MMT/Info.plist
+      properties:
+        CFBundleDisplayName: MMT
+        UILaunchScreen: {}
+        UISupportedInterfaceOrientations: [UIInterfaceOrientationPortrait]
+        NSMicrophoneUsageDescription: MMT listens for bird song to identify species and find which direction they are singing from.
+        NSMotionUsageDescription: MMT uses the phone's orientation so the arrow keeps pointing at the bird as you turn.
+        NSLocationWhenInUseUsageDescription: MMT uses your location to narrow down which birds are likely nearby and to find true north.
