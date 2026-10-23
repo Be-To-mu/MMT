@@ -8,7 +8,7 @@ public enum SpatialGeometry {
     /// Maps FOA axes into the device frame. Initial guess, assuming a portrait phone
     /// recording "video" through the back camera: front = -z (camera direction),
     /// left = -x, up = +y. Confirm with the clap test and adjust if the arrow is mirrored.
-    public static var foaToDevice = simd_double3x3(columns: (
+    public static let foaToDevice = simd_double3x3(columns: (
         SIMD3(0, 0, -1),   // FOA X →
         SIMD3(-1, 0, 0),   // FOA Y →
         SIMD3(0, 1, 0)     // FOA Z →

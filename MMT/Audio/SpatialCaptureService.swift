@@ -48,11 +48,11 @@ final class SpatialCaptureService: NSObject, @unchecked Sendable {
         if session.canAddOutput(output) { session.addOutput(output) }
         session.commitConfiguration()
 
-        queue.async { [session] in session.startRunning() }
+        queue.async { self.session.startRunning() }
     }
 
     func stop() {
-        queue.async { [session] in session.stopRunning() }
+        queue.async { self.session.stopRunning() }
     }
 }
 
