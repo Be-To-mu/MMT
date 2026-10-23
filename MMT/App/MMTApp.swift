@@ -4,7 +4,23 @@ import SwiftUI
 struct MMTApp: App {
     var body: some Scene {
         WindowGroup {
-            DirectionDebugView()
+            RootView()
         }
+    }
+}
+
+struct RootView: View {
+    @State private var tracker = DirectionTracker()
+
+    var body: some View {
+        TabView {
+            Tab("Camera", systemImage: "camera.viewfinder") {
+                ARDirectionView(tracker: tracker)
+            }
+            Tab("Debug", systemImage: "waveform") {
+                DirectionDebugView(tracker: tracker)
+            }
+        }
+        .task { await tracker.run() }
     }
 }

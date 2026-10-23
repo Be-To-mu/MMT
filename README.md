@@ -22,6 +22,7 @@ Run the core tests with `cd Packages/MMTCore && swift test`.
 
 - [x] DOA estimator, geometry and ring buffer (`Packages/MMTCore`), with unit tests
 - [x] FOA capture service, heading service, direction debug screen (clap test)
+- [x] AR camera view: world-anchored marker at the sound's bearing + 3D arrow in front of the camera
 - [ ] BirdNET species classifier (Core ML)
 - [ ] Detected-birds grid with Wikipedia photos → arrow
 - [ ] Stereo + sweep fallback for older iPhones

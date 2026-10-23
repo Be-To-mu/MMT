@@ -77,6 +77,15 @@ func planeWave(azimuth: Double, elevation: Double, noise: Float = 0.05,
     }
 }
 
+@Suite struct ARPositionTests {
+    @Test func mapsCompassDirectionsIntoARKitFrame() {
+        // ARKit .gravityAndHeading: x east, y up, z south.
+        #expect(SpatialGeometry.arPosition(world: SIMD3(1, 0, 0), distance: 10) == SIMD3(0, 0, -10)) // north
+        #expect(SpatialGeometry.arPosition(world: SIMD3(0, -1, 0), distance: 10) == SIMD3(10, 0, 0)) // east
+        #expect(SpatialGeometry.arPosition(world: SIMD3(0, 0, 1), distance: 2) == SIMD3(0, 2, 0))    // up
+    }
+}
+
 @Suite struct RingBufferTests {
     @Test func wrapsAndReturnsLatest() throws {
         let rb = FOARingBuffer(capacity: 8)

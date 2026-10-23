@@ -24,6 +24,8 @@ targets:
         CFBundleDisplayName: MMT
         UILaunchScreen: {}
         UISupportedInterfaceOrientations: [UIInterfaceOrientationPortrait]
+        UIRequiredDeviceCapabilities: [arkit]
+        NSCameraUsageDescription: MMT shows the camera with an arrow placed in the scene pointing towards the bird.
         NSMicrophoneUsageDescription: MMT listens for bird song to identify species and find which direction they are singing from.
         NSMotionUsageDescription: MMT uses the phone's orientation so the arrow keeps pointing at the bird as you turn.
         NSLocationWhenInUseUsageDescription: MMT uses your location to narrow down which birds are likely nearby and to find true north.
